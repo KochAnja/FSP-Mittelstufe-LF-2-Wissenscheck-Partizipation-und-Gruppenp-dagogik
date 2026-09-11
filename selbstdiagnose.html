@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selbstdiagnose Wissensfundament</title>
+<style>
+  :root{
+    --acc:#1F4E5A; --acc2:#2E6B78; --bg:#FBFCFC; --card:#FFFFFF;
+    --soft:#F1F6F7; --line:#D5E0E3; --ink:#23312F; --mut:#5E6F72;
+    --ok:#1F6B3B; --okbg:#EEF6F0; --note:#8A5A1E; --notebg:#FBF5EC;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Calibri,Arial,sans-serif;
+    font-size:17px;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 80px}
+  h1{font-size:1.85rem;color:var(--acc);margin:0 0 6px;line-height:1.2}
+  h2{font-size:1.25rem;color:var(--acc);margin:0 0 4px;line-height:1.3}
+  .kicker{font-size:.82rem;color:var(--acc);font-weight:700;letter-spacing:.04em;margin-bottom:10px}
+  .sub{color:var(--mut);font-size:.95rem;margin:0 0 22px}
+  .rule{height:2px;background:var(--acc);opacity:.85;margin:18px 0 22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+  .trust{background:var(--soft);border:1px solid var(--line);border-left:5px solid var(--acc);
+    border-radius:8px;padding:14px 16px;margin:20px 0;font-size:.95rem;color:#31464A}
+  .trust b{color:var(--acc)}
+  .tiles{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
+  @media(min-width:620px){.tiles{grid-template-columns:1fr 1fr}}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    cursor:pointer;text-align:left;font:inherit;color:inherit;transition:.15s;display:block;width:100%}
+  .tile:hover{border-color:var(--acc2);box-shadow:0 2px 10px rgba(31,78,90,.09)}
+  .tile .t-nr{font-size:.78rem;color:var(--acc);font-weight:700;letter-spacing:.04em}
+  .tile .t-ti{font-weight:600;margin:3px 0 4px}
+  .tile .t-me{font-size:.85rem;color:var(--mut)}
+  .tile[data-done="1"]{background:var(--okbg);border-color:#B9D6C4}
+  .tile[data-done="1"] .t-me{color:var(--ok)}
+  .prog{font-size:.9rem;color:var(--mut);margin:16px 0 0}
+  button.btn{background:var(--acc);color:#fff;border:0;border-radius:7px;padding:11px 20px;
+    font:inherit;font-weight:600;cursor:pointer}
+  button.btn:hover{background:var(--acc2)}
+  button.btn[disabled]{background:#B8C7CA;cursor:not-allowed}
+  button.ghost{background:none;color:var(--acc);border:1px solid var(--line);border-radius:7px;
+    padding:10px 16px;font:inherit;cursor:pointer}
+  button.ghost:hover{border-color:var(--acc)}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+  .spacer{flex:1}
+  .qmeta{font-size:.8rem;color:var(--mut);letter-spacing:.03em;text-transform:uppercase;margin-bottom:6px}
+  .qtext{font-size:1.05rem;margin:0 0 14px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin:0 0 4px}
+  .opt{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;
+    padding:11px 13px;cursor:pointer;background:#fff;transition:.12s}
+  .opt:hover{border-color:var(--acc2)}
+  .opt input{margin:3px 0 0;flex:0 0 auto;accent-color:var(--acc);width:17px;height:17px}
+  .opt.locked{cursor:default}
+  .opt.locked:hover{border-color:var(--line)}
+  .opt.correct{background:var(--okbg);border-color:#9FC7AE}
+  .opt.chosen{border-color:var(--acc);border-width:2px;padding:10px 12px}
+  .mark{margin-left:auto;font-weight:700;color:var(--ok);flex:0 0 auto}
+  .fb{margin-top:14px;border-left:4px solid var(--acc);background:var(--soft);
+    border-radius:0 8px 8px 0;padding:12px 15px}
+  .fb p{margin:0 0 9px}
+  .fb p:last-child{margin:0}
+  .fb .lb{font-weight:700;color:var(--acc);display:block;font-size:.82rem;letter-spacing:.04em;
+    text-transform:uppercase;margin-bottom:3px}
+  .match-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);
+    border-radius:8px;padding:11px 13px;margin-bottom:8px;background:#fff}
+  .match-row .ml{flex:1 1 220px}
+  .match-row select{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px;
+    background:#fff;color:inherit;flex:0 1 240px}
+  .match-row.correct{background:var(--okbg);border-color:#9FC7AE}
+  .match-row.wrong{background:var(--notebg);border-color:#DBC8A8}
+  .ord{display:flex;flex-direction:column;gap:8px}
+  .ord-item{display:flex;gap:11px;align-items:center;border:1px solid var(--line);border-radius:8px;
+    padding:11px 13px;background:#fff;cursor:pointer}
+  .ord-item .pos{width:26px;height:26px;border-radius:50%;background:var(--soft);color:var(--acc);
+    display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex:0 0 auto}
+  .ord-item.picked .pos{background:var(--acc);color:#fff}
+  .ord-item.correct{background:var(--okbg);border-color:#9FC7AE}
+  .ord-item.wrong{background:var(--notebg);border-color:#DBC8A8}
+  textarea{width:100%;min-height:190px;font:inherit;padding:13px;border:1px solid var(--line);
+    border-radius:8px;resize:vertical;background:#fff;color:inherit;line-height:1.5}
+  .crit{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .crit:last-of-type{border-bottom:0}
+  .crit input{margin:3px 0 0;accent-color:var(--acc);width:17px;height:17px;flex:0 0 auto}
+  .horizont{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:14px 0}
+  .horizont h3{margin:0 0 8px;font-size:.95rem;color:var(--acc);letter-spacing:.03em;text-transform:uppercase}
+  .horizont p{margin:0 0 9px}
+  .horizont p:last-child{margin:0}
+  .closing li{margin-bottom:10px}
+  .closing ul{padding-left:20px;margin:10px 0 0}
+  .hidden{display:none}
+  .fall{background:#fff;border:1px solid var(--line);border-left:5px solid var(--acc2);
+    border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:14px}
+  footer{margin-top:34px;font-size:.85rem;color:var(--mut);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const DATA = {
+  bereiche: [
+    { nr:1, titel:"Partizipationsbegriff und Abgrenzung zur Scheinbeteiligung", items:[
+      { typ:"multi", frage:"Welche Aussagen gehören zu einer fachlich vollständigen Bestimmung von Partizipation?",
+        opts:[
+          "Die Beteiligten haben eine reale Möglichkeit, auf das Ergebnis Einfluss zu nehmen.",
+          "Es geht um Entscheidungen, die die Beteiligten selbst betreffen.",
+          "Kinder und Jugendliche werden als Akteurinnen und Akteure ernst genommen.",
+          "Die Beteiligten werden über die Entscheidung informiert.",
+          "Die Beteiligten dürfen ihre Meinung äußern.",
+          "Die Fachkraft entscheidet im Einzelfall, ob sie beteiligt."],
+        korrekt:[0,1,2],
+        fb:{ 3:"Information ist eine Vorstufe. Partizipation beginnt dort, wo die Äußerung das Ergebnis verändern kann.",
+             4:"Die Meinung äußern zu dürfen ist Anhörung. Ob die Äußerung etwas bewirkt, bleibt damit offen.",
+             5:"Beteiligung ist ein Recht der Kinder und Jugendlichen und kein Angebot, das die Fachkraft nach Lage gewährt." },
+        fbMiss:"Diese drei Aussagen bilden zusammen den Kern: eigene Betroffenheit, reale Einflussmöglichkeit, Anerkennung als Akteurin oder Akteur." },
+      { typ:"single", frage:"Die Kinder einer Gruppe dürfen wählen, ob sie am Waldtag oder am Bastelangebot teilnehmen.",
+        opts:[
+          "Das ist keine Beteiligung, weil die Angebote vorgegeben sind.",
+          "Das ist Beteiligung auf einer niedrigen Stufe: Die Kinder wählen aus, ohne auf die Auswahl selbst Einfluss zu haben.",
+          "Das ist Beteiligung, weil die Kinder frei entscheiden."],
+        korrekt:1,
+        fb:{ 0:"Auch die Auswahl zwischen vorbereiteten Angeboten ist eine Form der Beteiligung. Der Unterschied liegt in der Stufe, nicht im Ob.",
+             2:"Die Kinder entscheiden innerhalb eines Rahmens, den die Fachkraft gesetzt hat. Auf diesen Rahmen selbst haben sie keinen Einfluss." } },
+      { typ:"single", frage:"Woran wird erkennbar, dass es sich nicht um eine scheinbare Beteiligung handelt?",
+        opts:[
+          "Die Kinder wurden gefragt.",
+          "Die Entscheidung kann tatsächlich anders ausfallen, und das Ergebnis wird im Handeln der Einrichtung sichtbar.",
+          "Das Verfahren war gut vorbereitet.",
+          "Alle Kinder haben sich geäußert."],
+        korrekt:1,
+        fb:{ 0:"Gefragt zu werden sagt nichts darüber, ob die Antwort etwas bewirkt.",
+             2:"Ein gut vorbereitetes Verfahren kann folgenlos bleiben.",
+             3:"Eine hohe Beteiligungsquote sagt nichts über die Wirkung der Äußerungen." } },
+      { typ:"single", frage:"Ein Jugendlicher möchte über die Regelung zum nächtlichen Ausgang mitentscheiden. Die Fachkraft entscheidet gegen seinen Wunsch und erklärt ihm, welche rechtliche Vorgabe dem zugrunde liegt.",
+        opts:[
+          "Damit findet keine Partizipation statt, weil er nicht mitentscheiden konnte.",
+          "Beteiligung hat Grenzen. Wo sie fachlich oder rechtlich begründet sind und transparent gemacht werden, hebt das die Beteiligungskultur nicht auf.",
+          "Partizipation bedeutet ohnehin nur, gefragt zu werden."],
+        korrekt:1,
+        fb:{ 0:"Grenzen gehören zu partizipativer Arbeit. Fachlich entscheidend ist, ob die Grenze begründet ist und ob sie erklärt wird.",
+             2:"Damit wäre Partizipation auf Anhörung reduziert." } }
+    ]},
+
+    { nr:2, titel:"Beteiligungsmöglichkeiten in Tageseinrichtung und stationärer Jugendhilfe", items:[
+      { typ:"multi", frage:"In welchen dieser Alltagssituationen können Kinder in einer Tageseinrichtung beteiligt werden?",
+        opts:[
+          "bei der Auswahl des Projektthemas",
+          "bei der Gestaltung des Gruppenraums",
+          "beim Aufstellen der Gruppenregeln",
+          "bei der Frage, was es zum Mittagessen gibt",
+          "bei der Entscheidung, welches Kind aufgenommen wird"],
+        korrekt:[0,1,2,3],
+        fb:{ 4:"Aufnahmeentscheidungen liegen beim Träger. Nicht jede Entscheidung in einer Einrichtung ist ein Beteiligungsgegenstand der Kindergruppe." },
+        fbMiss:"Beteiligung entscheidet sich im Alltag. Raumgestaltung, Regeln, Projektthemen und Essen betreffen die Kinder unmittelbar." },
+      { typ:"single", frage:"„Kinder unter drei Jahren können noch nicht beteiligt werden.“",
+        opts:[
+          "Das stimmt, Beteiligung setzt sprachliche Verständigung voraus.",
+          "Das stimmt nicht. Beteiligung richtet sich nach den Ausdrucksformen des Kindes. Bei sehr jungen Kindern heißt das, Signale wahrzunehmen und darauf zu reagieren.",
+          "Das stimmt teilweise, unter drei Jahren beschränkt sich Beteiligung auf die Essenssituation."],
+        korrekt:1,
+        fb:{ 0:"Beteiligung verlangt, die Ausdrucksformen der Kinder zu lesen. Was sich mit dem Alter ändert, ist die Form, nicht der Anspruch.",
+             2:"Es gibt keinen Bereich, der für junge Kinder von Beteiligung ausgenommen wäre." } },
+      { typ:"single", frage:"Bei der Hilfeplanung nach § 36 SGB VIII …",
+        opts:[
+          "… entscheiden Jugendamt und Einrichtung, die Jugendlichen werden über das Ergebnis informiert.",
+          "… sind die Kinder und Jugendlichen zu beteiligen, ihre Sicht gehört in den Hilfeplan.",
+          "… werden Jugendliche ab sechzehn Jahren beteiligt."],
+        korrekt:1,
+        fb:{ 0:"Die Beteiligung der Kinder und Jugendlichen an der Hilfeplanung ist gesetzlich vorgeschrieben.",
+             2:"Die Beteiligung ist nicht an eine Altersgrenze gebunden." } },
+      { typ:"single", frage:"Eine Wohngruppe führt einmal im Monat eine Gruppenkonferenz durch, in der die Jugendlichen Anliegen einbringen. Im übrigen Alltag entscheidet das Team.",
+        opts:[
+          "Damit ist Beteiligung in der Wohngruppe verankert.",
+          "Die Konferenz ist ein Baustein. Ob Beteiligung verankert ist, zeigt sich daran, ob die Jugendlichen auch an den alltäglichen Entscheidungen mitwirken, die sie betreffen.",
+          "Eine monatliche Konferenz genügt nicht, Beteiligung verlangt tägliche Abstimmungen über alle Fragen."],
+        korrekt:1,
+        fb:{ 0:"Ein Gremium allein sagt nichts über die Beteiligung im Alltag.",
+             2:"Beteiligung heißt nicht, jede Frage zur Abstimmung zu stellen, sondern die Jugendlichen an den Entscheidungen zu beteiligen, die sie betreffen." } }
+    ]},
+
+    { nr:3, titel:"Partizipation in einer Situation beurteilen und Beteiligung gestalten", frei:true, items:[
+      { typ:"frei",
+        fall:"In einer Tageseinrichtung hat das Team beschlossen, dass die Kinder ihr Frühstück künftig nicht mehr selbst zusammenstellen, sondern alle gemeinsam am gedeckten Tisch frühstücken. Begründet wird das mit dem ruhigeren Ablauf. Die Kinder wurden nicht gefragt. Ein Kind sagt beim ersten gemeinsamen Frühstück: „Ich hab doch jetzt gar keinen Hunger.“",
+        frage:"Beurteilen Sie, ob hier Beteiligung stattfindet, und beschreiben Sie begründet, wie Sie die Kinder beteiligen würden.",
+        kriterien:[
+          "Ich habe beurteilt, ob Beteiligung stattfindet, und meine Einschätzung begründet.",
+          "Ich habe benannt, dass eine Entscheidung, die den Alltag der Kinder unmittelbar betrifft, ohne sie getroffen wurde.",
+          "Ich habe beschrieben, wie die Gründe des Teams den Kindern transparent gemacht werden.",
+          "Ich habe beschrieben, wie die Sicht der Kinder erhoben und in die Regelung einbezogen wird.",
+          "Ich habe eine konkrete Beteiligungsform benannt, die zum Alter der Kinder passt.",
+          "Ich habe benannt, wo die Beteiligung an Grenzen stößt und wie mit diesen Grenzen umzugehen ist."],
+        horizont:[
+          "Beteiligung findet hier nicht statt. Eine Regelung, die den Tagesablauf und das Essverhalten der Kinder unmittelbar betrifft, wurde ohne sie getroffen. Dass das Anliegen des Teams fachlich nachvollziehbar ist, ändert daran nichts.",
+          "Eine angemessene Beteiligung besteht darin, den Kindern das Anliegen des Teams verständlich zu machen, ihre Sicht auf die Frühstückssituation zu erheben und die Regelung gemeinsam zu entwickeln. Die Form richtet sich nach dem Alter: Bildkarten, Abstimmung im Morgenkreis, Erprobung über einen begrenzten Zeitraum mit anschließender Auswertung.",
+          "Grenzen können sich aus hygienischen, organisatorischen oder aufsichtsrechtlichen Anforderungen ergeben. Wo eine Entscheidung aus solchen Gründen nicht zur Disposition steht, wird das den Kindern erklärt, und die Beteiligung richtet sich auf die Fragen, die offen bleiben."] }
+    ]},
+
+    { nr:4, titel:"Gruppe: Begriff und Merkmale", items:[
+      { typ:"single", frage:"Welche dieser Konstellationen ist eine soziale Gruppe?",
+        opts:["die Fahrgäste eines Busses","die Kinder einer Kita-Gruppe","die Zuschauenden bei einem Fußballspiel","alle Menschen mit roten Haaren"],
+        korrekt:1,
+        fb:{ 0:"Menschen am selben Ort bilden noch keine Gruppe. Es fehlen dauerhafte Beziehung, Interaktion und ein gemeinsames Bezugssystem.",
+             2:"Auch hier fehlen Beziehung und Interaktion zwischen den Anwesenden.",
+             3:"Ein geteiltes Merkmal ergibt eine Kategorie, keine Gruppe. Zwischen den Personen besteht keine Beziehung." } },
+      { typ:"multi", frage:"Welche Merkmale kennzeichnen eine soziale Gruppe?",
+        opts:["Wir-Bewusstsein","gemeinsame Ziele oder Interessen","eigene Normen und Regeln","Rollen unter den Mitgliedern","eine bestimmte Mindestgröße","eine formale Leitung","gleiches Alter der Mitglieder"],
+        korrekt:[0,1,2,3],
+        fb:{ 4:"Eine Mindestgröße ist keine Bedingung. Auch drei Personen bilden eine Gruppe, wenn Beziehung und gemeinsamer Bezug bestehen.",
+             5:"Eine formale Leitung kann vorliegen, ist aber kein Merkmal der Gruppe. Informelle Gruppen haben keine.",
+             6:"Altersgleichheit ist keine Bedingung. Gruppen können altersgemischt sein." },
+        fbMiss:"Eine Gruppe entsteht aus Beziehung, Interaktion und einem gemeinsamen Bezugssystem, aus dem sich Normen und Rollen entwickeln." },
+      { typ:"multi", frage:"Als ein neues Kind in die Gruppe kommt, erklären ihm zwei Kinder ungefragt, wie „wir das hier machen“. Welche Gruppenmerkmale werden darin sichtbar?",
+        opts:["Wir-Bewusstsein","eigene Normen und Regeln","eine formale Leitung","Dauerhaftigkeit der Gruppe"],
+        korrekt:[0,1],
+        fb:{ 2:"Dass zwei Kinder die Weitergabe übernehmen, ist keine formale Leitung. Es zeigt eher, wie die Gruppe ihre Regeln selbst weiterträgt.",
+             3:"Die Szene zeigt bestehende Regeln, sagt aber für sich genommen nichts über die Dauer der Gruppe." },
+        fbMiss:"Die Kinder sprechen von „wir“ und geben eine Regel weiter, die in der Gruppe gilt." }
+    ]},
+
+    { nr:5, titel:"Gruppenformen und Gruppenfunktionen", items:[
+      { typ:"match", frage:"Ordnen Sie die Beispiele der jeweiligen Gruppenform zu.",
+        paare:[["Familie","Primärgruppe"],["Schulklasse","Sekundärgruppe"],["Clique auf dem Schulhof","informelle Gruppe"],["Wohngruppe einer Einrichtung","formelle Gruppe"]],
+        fbAll:"Die Einteilungen überschneiden sich: Eine Wohngruppe ist formell und kann zugleich Züge einer Primärgruppe annehmen. Entscheidend ist, welche Unterscheidung Sie gerade anlegen." },
+      { typ:"single", frage:"Was kennzeichnet eine Primärgruppe?",
+        opts:["Sie ist die erste Gruppe im Leben eines Menschen.","Sie ist durch persönliche, dauerhafte und emotional bedeutsame Beziehungen gekennzeichnet.","Sie hat Vorrang vor allen anderen Gruppen, denen ein Mensch angehört."],
+        korrekt:1,
+        fb:{ 0:"Das Wort meint die Qualität der Beziehungen, nicht die Reihenfolge. Auch ein enger Freundeskreis im Erwachsenenalter ist eine Primärgruppe.",
+             2:"Es geht nicht um Rang, sondern um die Art der Beziehungen." } },
+      { typ:"multi", frage:"Welche Funktionen kann eine Gruppe für ihre Mitglieder haben?",
+        opts:["soziale Unterstützung","Zugehörigkeit und Identitätsbildung","Orientierung und Sicherheit","Lernen sozialer Verhaltensweisen","Erfahrungsaustausch","Ausgleich unterschiedlicher Leistungsfähigkeit"],
+        korrekt:[0,1,2,3,4],
+        fb:{ 5:"Das beschreibt ein pädagogisches Ziel, das man mit einer Gruppe verfolgen kann, keine Funktion, die die Gruppe für ihre Mitglieder erfüllt." },
+        fbMiss:"Funktionen beschreiben, was die Zugehörigkeit den Mitgliedern bringt." },
+      { typ:"single", frage:"Welche Aussage zu Gruppenfunktionen ist fachlich zutreffend?",
+        opts:["Gruppen wirken auf ihre Mitglieder grundsätzlich unterstützend.","Gruppen geben Zugehörigkeit. Dieselben Mechanismen erzeugen Anpassungsdruck und können andere ausschließen.","Ausgrenzung ist ein Zeichen dafür, dass keine Gruppe vorliegt."],
+        korrekt:1,
+        fb:{ 0:"Gruppen können ebenso unter Druck setzen und ausschließen.",
+             2:"Ausgrenzung ist im Gegenteil ein Vorgang, der die Gruppengrenze herstellt." } }
+    ]},
+
+    { nr:6, titel:"Gruppenentwicklung nach Bernstein und Lowy", items:[
+      { typ:"order", frage:"Bringen Sie die Phasen in die richtige Reihenfolge. Tippen Sie die Phasen nacheinander an.",
+        reihe:["Fremdheit und Orientierung","Machtkampf","Vertrautheit","Differenzierung","Trennung"],
+        fbAll:"Vertrautheit entsteht nicht vor der Aushandlung, sondern aus ihr. Erst wenn Rollen und Normen geklärt sind, stellt sich ein Wir-Gefühl ein." },
+      { typ:"match", frage:"Welche Phase zeigt sich in der jeweiligen Szene?",
+        paare:[
+          ["Die Kinder beobachten einander und halten sich an die Fachkraft.","Fremdheit und Orientierung"],
+          ["Es wird darüber gestritten, wer bestimmt, welches Spiel gespielt wird.","Machtkampf"],
+          ["Die Kinder haben eigene Rituale entwickelt und sprechen von „unserer Gruppe“.","Vertrautheit"],
+          ["Ein Kind verteilt das Material, ein anderes tröstet, wenn jemand weint.","Differenzierung"]],
+        fbAll:"In der Differenzierung werden unterschiedliche Fähigkeiten anerkannt und Verantwortung übernommen. Das unterscheidet sie von der Vertrautheit, in der vor allem das Wir-Gefühl trägt." },
+      { typ:"single", frage:"In einer neu zusammengesetzten Wohngruppe häufen sich Konflikte darüber, wer wann den Gemeinschaftsraum nutzt.",
+        opts:["Die Gruppe ist gescheitert, die Zusammensetzung sollte geändert werden.","Die Gruppe befindet sich in der Machtkampfphase. Die Aushandlung von Rollen und Normen gehört dazu, Aufgabe der Fachkraft ist es, diesen Prozess zu begleiten.","Die Fachkraft setzt eine Nutzungsregel, damit die Konflikte enden."],
+        korrekt:1,
+        fb:{ 0:"Konflikte in dieser Phase sind erwartbar. Ihr Ausbleiben wäre eher ein Anlass, genauer hinzusehen.",
+             2:"Eine gesetzte Regel beendet den Konflikt und überspringt die Aushandlung. Die Gruppe klärt dann nicht, wie sie Konflikte löst." } },
+      { typ:"single", frage:"Eine eingespielte Gruppe nimmt drei neue Kinder auf.",
+        opts:["Die Gruppe bleibt in der Phase, in der sie zuvor war.","Die Phasen können erneut durchlaufen werden. Die Gruppe orientiert sich neu und handelt Rollen und Normen wieder aus.","Die neuen Kinder passen sich der bestehenden Gruppe an."],
+        korrekt:1,
+        fb:{ 0:"Das Modell beschreibt keinen einmaligen Ablauf. Veränderungen in der Zusammensetzung setzen den Prozess erneut in Gang.",
+             2:"Anpassung findet statt, aber nicht einseitig. Auch die bestehende Gruppe verändert sich." } }
+    ]},
+
+    { nr:7, titel:"Rollen in Gruppen und die Aufgabe der Fachkraft", items:[
+      { typ:"match", frage:"Welche Rolle zeichnet sich in der jeweiligen Szene ab?",
+        paare:[
+          ["Ein Kind macht Vorschläge und gewinnt andere dafür.","Führungsrolle"],
+          ["Ein Kind widerspricht regelmäßig und stellt Regeln infrage.","Opponentenrolle"],
+          ["Ein Kind wird von der Gruppe für Missgeschicke verantwortlich gemacht.","Sündenbockrolle"],
+          ["Ein Kind schließt sich Vorschlägen an, ohne eigene einzubringen.","Mitläuferrolle"]],
+        fbAll:"Rollen beschreiben, welche Funktion eine Person im Gefüge der Gruppe übernimmt. Ob ihr Verhalten angenehm ist, sagt darüber nichts." },
+      { typ:"single", frage:"Rollen in Gruppen …",
+        opts:["… sind Eigenschaften der einzelnen Kinder.","… entstehen im Zusammenspiel der Gruppe und können sich verändern.","… bleiben über die gesamte Gruppengeschichte stabil."],
+        korrekt:1,
+        fb:{ 0:"Eine Rolle ist ein Produkt der Gruppe. Dasselbe Kind kann in einer anderen Gruppe eine andere Rolle einnehmen. Für die pädagogische Arbeit ist das der entscheidende Punkt.",
+             2:"Rollen verfestigen sich, sind aber veränderbar. Genau darin liegt der Ansatzpunkt der Fachkraft." } },
+      { typ:"single", frage:"Ein Kind spielt in der Freispielzeit häufig allein.",
+        opts:["Das Kind nimmt die Außenseiterrolle ein.","Von einer Außenseiterrolle spricht man, wenn die Gruppe ein Mitglied ausschließt. Ein gewählter Rückzug ist etwas anderes und verlangt eine genauere Beobachtung.","Das Kind ist schüchtern und braucht Unterstützung beim Kontaktaufbau."],
+        korrekt:1,
+        fb:{ 0:"Alleinsein und Ausgeschlossenwerden sind nicht dasselbe.",
+             2:"Auch das ist eine Deutung, bevor beobachtet wurde. Erst die Beobachtung über mehrere Situationen zeigt, worum es geht." } },
+      { typ:"frei",
+        fall:"In einer Kindergruppe wird ein Kind regelmäßig für Missgeschicke verantwortlich gemacht, auch wenn es daran nicht beteiligt war. Die anderen Kinder sagen: „Der war das bestimmt wieder.“",
+        frage:"Beurteilen Sie, worin die Aufgabe der pädagogischen Fachkraft in dieser Situation besteht.",
+        kriterien:[
+          "Ich habe die Rolle als Ergebnis des Gruppenprozesses beschrieben und nicht als Eigenschaft des Kindes.",
+          "Ich habe benannt, dass Beobachtung und Analyse dem Handeln vorausgehen.",
+          "Ich habe eine konkrete pädagogische Handlung beschrieben.",
+          "Ich habe benannt, dass bei Ausgrenzung und Diskriminierung ein Eingreifen erforderlich ist.",
+          "Ich habe beschrieben, wie dem Kind ein Rollenwechsel ermöglicht werden kann."],
+        horizont:[
+          "Die Zuschreibung ist eine Rolle, die die Gruppe hergestellt hat. Sie entlastet die anderen Kinder und stabilisiert sich, weil jede weitere Zuschreibung sie bestätigt. Das Kind wird dadurch nicht zum Verursacher, sondern zum Träger einer Funktion im Gruppengefüge.",
+          "Vor dem Eingreifen steht die Beobachtung: In welchen Situationen tritt die Zuschreibung auf, wer beteiligt sich daran, wie reagiert das Kind. Erst daraus ergibt sich, woran anzusetzen ist.",
+          "Ausgrenzung verlangt ein Eingreifen. Die Fachkraft benennt die Zuschreibung, wenn sie auftritt, und stellt sie in Frage. Zugleich schafft sie Situationen, in denen das Kind eine andere Erfahrung in der Gruppe machen kann, etwa durch eine sichtbare Aufgabe oder eine gelingende Zusammenarbeit mit einzelnen Kindern."] }
+    ]}
+  ]
+};
+
+/* ---------------- Zustand (nur im Arbeitsspeicher) ---------------- */
+const state = { view:"start", b:0, i:0, done:new Set(), antworten:[] };
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function render(){
+  window.scrollTo(0,0);
+  app.innerHTML = state.view === "start" ? viewStart()
+    : state.view === "item" ? viewItem()
+    : viewEnde();
+  bind();
+}
+
+/* ---------------- Startseite ---------------- */
+function viewStart(){
+  const tiles = DATA.bereiche.map((b,ix) => {
+    const anz = b.items.length;
+    const label = b.frei ? "Eine Aufgabe zum Schreiben" : anz + (anz===1?" Aufgabe":" Aufgaben");
+    const done = state.done.has(ix) ? "1" : "0";
+    return '<button class="tile" data-b="'+ix+'" data-done="'+done+'">'
+      + '<div class="t-nr">BEREICH '+b.nr+'</div>'
+      + '<div class="t-ti">'+esc(b.titel)+'</div>'
+      + '<div class="t-me">'+(done==="1" ? "bearbeitet · erneut möglich" : label)+'</div></button>';
+  }).join("");
+  return '<div class="kicker">LERNFELD 2 · FSP-MITTELSTUFE · PHASE 1</div>'
+    + '<h1>Selbstdiagnose Wissensfundament</h1>'
+    + '<p class="sub">Partizipation und Gruppenpädagogik</p>'
+    + '<div class="rule"></div>'
+    + '<p>Dieses Werkzeug zeigt Ihnen, wo Ihr Wissen zum Wissensfundament bereits sicher ist und wo noch etwas offen ist. '
+    + 'Sie bearbeiten die Bereiche in beliebiger Reihenfolge und so oft Sie möchten.</p>'
+    + '<div class="trust"><b>Nur zum Üben.</b> Ihre Eingaben bleiben auf Ihrem Gerät und werden nicht gespeichert, '
+    + 'nicht übertragen und nicht ausgewertet. Niemand sieht Ihre Antworten. Es gibt keine Punkte und keine Note — '
+    + 'antworten Sie so, wie Sie es wirklich einschätzen.</div>'
+    + '<h2 style="margin-top:26px">Die sieben Bereiche</h2>'
+    + '<p class="sub" style="margin-bottom:14px">Sie entsprechen den Aufgaben des Tests am 23.09.</p>'
+    + '<div class="tiles">'+tiles+'</div>'
+    + '<p class="prog">'+state.done.size+' von 7 Bereichen in dieser Sitzung bearbeitet.</p>'
+    + '<footer>Ohne Speicherung. Beim erneuten Aufruf der Seite beginnen Sie neu.</footer>';
+}
+
+/* ---------------- Aufgabenansicht ---------------- */
+function viewItem(){
+  const b = DATA.bereiche[state.b];
+  const it = b.items[state.i];
+  const a = state.antworten[state.i];
+  const kopf = '<div class="kicker">BEREICH '+b.nr+' · '+esc(b.titel).toUpperCase()+'</div>'
+    + '<div class="qmeta">Aufgabe '+(state.i+1)+' von '+b.items.length+'</div>';
+  let body = "";
+  if(it.typ === "single" || it.typ === "multi") body = renderChoice(it, a);
+  else if(it.typ === "match") body = renderMatch(it, a);
+  else if(it.typ === "order") body = renderOrder(it, a);
+  else if(it.typ === "frei") body = renderFrei(it, a);
+  return kopf + '<div class="card">'+body+'</div>' + leiste(a);
+}
+
+function leiste(a){
+  const letzte = state.i === DATA.bereiche[state.b].items.length - 1;
+  const weiter = letzte ? "Bereich abschließen" : "Weiter";
+  return '<div class="bar">'
+    + '<button class="ghost" id="zurueck">Zur Übersicht</button><div class="spacer"></div>'
+    + (a ? '<button class="btn" id="weiter">'+weiter+'</button>'
+         : '<button class="btn" id="pruefen">Antwort abgeben</button>')
+    + '</div>';
+}
+
+function renderChoice(it, a){
+  const multi = it.typ === "multi";
+  const korrekt = multi ? it.korrekt : [it.korrekt];
+  const opts = it.opts.map((o,ix) => {
+    const gew = a ? a.wahl.includes(ix) : false;
+    const cls = ["opt"];
+    if(a){ cls.push("locked"); if(korrekt.includes(ix)) cls.push("correct"); if(gew) cls.push("chosen"); }
+    return '<label class="'+cls.join(" ")+'">'
+      + '<input type="'+(multi?"checkbox":"radio")+'" name="w" value="'+ix+'"'
+      + (gew?" checked":"") + (a?" disabled":"") + '>'
+      + '<span>'+esc(o)+'</span>'
+      + (a && korrekt.includes(ix) ? '<span class="mark">✓</span>' : '')
+      + '</label>';
+  }).join("");
+  let fb = "";
+  if(a){
+    const teile = [];
+    a.wahl.forEach(ix => { if(!korrekt.includes(ix) && it.fb && it.fb[ix]) teile.push(it.fb[ix]); });
+    const verpasst = korrekt.filter(ix => !a.wahl.includes(ix));
+    if(verpasst.length && it.fbMiss) teile.push(it.fbMiss);
+    if(!teile.length) teile.push(multi
+      ? "Sie haben genau die fachlich zutreffenden Aussagen gewählt."
+      : "Das ist die fachlich zutreffende Antwort.");
+    fb = '<div class="fb"><span class="lb">Dazu</span>' + teile.map(t => '<p>'+esc(t)+'</p>').join("") + '</div>';
+  }
+  return '<p class="qtext">'+esc(it.frage)+'</p>'
+    + (multi && !a ? '<p class="sub" style="margin:-8px 0 12px">Mehrere Antworten sind zutreffend.</p>' : '')
+    + '<div class="opts">'+opts+'</div>' + fb;
+}
+
+function renderMatch(it, a){
+  const rechts = it.paare.map(p => p[1]);
+  const auswahl = [...new Set(rechts)].sort((x,y)=>x.localeCompare(y,"de"));
+  const rows = it.paare.map((p,ix) => {
+    const gew = a ? a.wahl[ix] : "";
+    let cls = "match-row";
+    if(a) cls += (gew === p[1] ? " correct" : " wrong");
+    const sel = '<select data-row="'+ix+'"'+(a?" disabled":"")+'>'
+      + '<option value="">bitte wählen</option>'
+      + auswahl.map(o => '<option value="'+esc(o)+'"'+(gew===o?" selected":"")+'>'+esc(o)+'</option>').join("")
+      + '</select>';
+    return '<div class="'+cls+'"><div class="ml">'+esc(p[0])+'</div>'+sel
+      + (a && gew !== p[1] ? '<div style="flex:1 1 100%;font-size:.9rem;color:#6B5330">Zutreffend: '+esc(p[1])+'</div>' : '')
+      + '</div>';
+  }).join("");
+  const fb = a ? '<div class="fb"><span class="lb">Dazu</span><p>'+esc(it.fbAll)+'</p></div>' : "";
+  return '<p class="qtext">'+esc(it.frage)+'</p>'+rows+fb;
+}
+
+function renderOrder(it, a){
+  const liste = a ? a.wahl : (state.mischung || (state.mischung = mische(it.reihe)));
+  const items = liste.map((t,ix) => {
+    let cls = "ord-item";
+    let pos = "";
+    if(a){ cls += (it.reihe[ix] === t ? " correct" : " wrong"); pos = String(ix+1); }
+    else {
+      const gewaehlt = (state.ordWahl||[]).indexOf(t);
+      if(gewaehlt >= 0){ cls += " picked"; pos = String(gewaehlt+1); }
+    }
+    return '<div class="'+cls+'" data-t="'+esc(t)+'"><span class="pos">'+pos+'</span><span>'+esc(t)+'</span></div>';
+  }).join("");
+  let fb = "";
+  if(a){
+    const richtig = it.reihe.every((t,ix) => a.wahl[ix] === t);
+    fb = '<div class="fb"><span class="lb">Dazu</span>'
+      + '<p>Die Reihenfolge lautet: '+esc(it.reihe.join(" → "))+'</p>'
+      + (richtig ? '' : '<p>'+esc(it.fbAll)+'</p>') + '</div>';
+  }
+  return '<p class="qtext">'+esc(it.frage)+'</p>'
+    + (a ? '' : '<p class="sub" style="margin:-8px 0 12px">Angetippte Phasen lassen sich durch erneutes Antippen wieder lösen.</p>')
+    + '<div class="ord">'+items+'</div>' + fb;
+}
+
+function renderFrei(it, a){
+  const fall = '<div class="fall">'+esc(it.fall)+'</div><p class="qtext"><b>'+esc(it.frage)+'</b></p>';
+  if(!a) return fall + '<textarea id="freitext" placeholder="Ihre Antwort"></textarea>';
+  const kr = it.kriterien.map((k,ix) =>
+    '<label class="crit"><input type="checkbox" data-k="'+ix+'"><span>'+esc(k)+'</span></label>').join("");
+  return fall
+    + '<div class="horizont"><h3>Ihre Antwort</h3><p style="white-space:pre-wrap">'+esc(a.text || "(kein Text eingegeben)")+'</p></div>'
+    + '<div class="horizont"><h3>Fachlicher Erwartungshorizont</h3>'+it.horizont.map(t=>'<p>'+esc(t)+'</p>').join("")+'</div>'
+    + '<h2 style="margin:20px 0 6px;font-size:1.05rem">Welche Kriterien haben Sie getroffen?</h2>'
+    + '<p class="sub" style="margin-bottom:6px">Der Abgleich bleibt Ihre Einschätzung. Es wird nichts ausgewertet.</p>'
+    + kr;
+}
+
+/* ---------------- Abschluss eines Bereichs ---------------- */
+function viewEnde(){
+  const b = DATA.bereiche[state.b];
+  const offen = [];
+  b.items.forEach((it,ix) => {
+    const a = state.antworten[ix];
+    if(!a) return;
+    if(it.typ === "single" || it.typ === "multi"){
+      const korrekt = it.typ === "multi" ? it.korrekt : [it.korrekt];
+      const falsch = a.wahl.some(w => !korrekt.includes(w)) || korrekt.some(k => !a.wahl.includes(k));
+      if(falsch) offen.push(kurz(it.frage));
+    } else if(it.typ === "match"){
+      if(it.paare.some((p,i2) => a.wahl[i2] !== p[1])) offen.push(kurz(it.frage));
+    } else if(it.typ === "order"){
+      if(!it.reihe.every((t,i2) => a.wahl[i2] === t)) offen.push(kurz(it.frage));
+    }
+  });
+  let text;
+  if(b.frei){
+    text = '<p>Sie haben Ihre Antwort mit dem fachlichen Erwartungshorizont abgeglichen. '
+      + 'Welche der Kriterien Sie noch nicht sicher treffen, wissen Sie jetzt genauer als vorher.</p>';
+  } else if(!offen.length){
+    text = '<p>In diesem Bereich haben Sie alle Aufgaben fachlich zutreffend beantwortet.</p>';
+  } else {
+    text = '<p>Bei diesen Aufgaben lag Ihre Antwort neben der fachlichen Bestimmung. '
+      + 'Die Erläuterungen dazu haben Sie gelesen.</p><ul>'
+      + offen.map(t => '<li>'+esc(t)+'</li>').join("") + '</ul>';
+  }
+  return '<div class="kicker">BEREICH '+b.nr+'</div>'
+    + '<h1 style="font-size:1.45rem">'+esc(b.titel)+'</h1>'
+    + '<div class="rule"></div>'
+    + '<div class="card closing">'+text+'</div>'
+    + '<div class="bar"><button class="ghost" id="nochmal">Bereich noch einmal</button>'
+    + '<div class="spacer"></div><button class="btn" id="zurueck2">Zur Übersicht</button></div>';
+}
+function kurz(s){ return s.length > 92 ? s.slice(0,92).replace(/\s\S*$/,"") + " …" : s; }
+
+/* ---------------- Interaktion ---------------- */
+function mische(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a.every((t,ix)=>t===arr[ix]) ? mische(arr) : a;
+}
+
+function bind(){
+  document.querySelectorAll(".tile").forEach(el => el.onclick = () => {
+    state.b = +el.dataset.b; state.i = 0; state.antworten = [];
+    state.mischung = null; state.ordWahl = [];
+    state.view = "item"; render();
+  });
+  const z1 = document.getElementById("zurueck"), z2 = document.getElementById("zurueck2");
+  if(z1) z1.onclick = () => { state.view = "start"; render(); };
+  if(z2) z2.onclick = () => { state.view = "start"; render(); };
+  const nm = document.getElementById("nochmal");
+  if(nm) nm.onclick = () => { state.i = 0; state.antworten = []; state.mischung = null;
+    state.ordWahl = []; state.view = "item"; render(); };
+
+  const w = document.getElementById("weiter");
+  if(w) w.onclick = () => {
+    const b = DATA.bereiche[state.b];
+    if(state.i === b.items.length - 1){ state.done.add(state.b); state.view = "ende"; }
+    else { state.i++; state.mischung = null; state.ordWahl = []; }
+    render();
+  };
+
+  document.querySelectorAll(".ord-item").forEach(el => el.onclick = () => {
+    if(state.antworten[state.i]) return;
+    state.ordWahl = state.ordWahl || [];
+    const t = el.dataset.t, ix = state.ordWahl.indexOf(t);
+    if(ix >= 0) state.ordWahl.splice(ix,1); else state.ordWahl.push(t);
+    render();
+  });
+
+  const pr = document.getElementById("pruefen");
+  if(pr) pr.onclick = () => {
+    const it = DATA.bereiche[state.b].items[state.i];
+    if(it.typ === "single" || it.typ === "multi"){
+      const wahl = [...document.querySelectorAll('input[name="w"]:checked')].map(e => +e.value);
+      if(!wahl.length){ hinweis("Bitte wählen Sie zuerst eine Antwort."); return; }
+      state.antworten[state.i] = {wahl};
+    } else if(it.typ === "match"){
+      const wahl = it.paare.map((_,ix) => document.querySelector('select[data-row="'+ix+'"]').value);
+      if(wahl.some(v => !v)){ hinweis("Bitte ordnen Sie zuerst allen Zeilen etwas zu."); return; }
+      state.antworten[state.i] = {wahl};
+    } else if(it.typ === "order"){
+      const wahl = state.ordWahl || [];
+      if(wahl.length !== it.reihe.length){ hinweis("Bitte bringen Sie zuerst alle Phasen in eine Reihenfolge."); return; }
+      state.antworten[state.i] = {wahl};
+    } else if(it.typ === "frei"){
+      const t = (document.getElementById("freitext").value || "").trim();
+      if(t.length < 60){ hinweis("Schreiben Sie zuerst Ihre eigene Antwort. Der Erwartungshorizont erscheint danach."); return; }
+      state.antworten[state.i] = {text:t};
+    }
+    render();
+  };
+}
+
+function hinweis(t){
+  const alt = document.getElementById("hinw");
+  if(alt) alt.remove();
+  const d = document.createElement("div");
+  d.id = "hinw"; d.className = "trust"; d.style.borderLeftColor = "#8A5A1E";
+  d.textContent = t;
+  document.querySelector(".bar").insertAdjacentElement("beforebegin", d);
+}
+
+render();
+</script>
+</body>
+</html>
